@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.RectF
 import android.graphics.Typeface
 import android.net.Uri
 import androidx.compose.ui.graphics.Color as ComposeColor
@@ -26,6 +25,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private val recognizer = TextRecognizer()
 
+    // Reusable Paint objects – allocated once, reused for every drawing operation
+    private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+    }
+
     private val _uiState = MutableStateFlow(EditorUiState())
     val uiState: StateFlow<EditorUiState> = _uiState.asStateFlow()
 
@@ -36,12 +43,23 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 _uiState.update { it.copy(errorMessage = "Failed to load image") }
                 return@launch
             }
-            val blocks = recognizer.detectText(bmp)
+            val original = bmp
+            val working = original.copy(Bitmap.Config.ARGB_8888, true)
+
+            // 1. Detect text blocks
+            val rawBlocks = recognizer.detectText(original)
+
+            // 2. Compute background color for each block using the original bitmap
+            val blocksWithBg = rawBlocks.map { block ->
+                val bgColor = EditorUtils.extractDominantColor(original, block.boundingBox)
+                block.copy(backgroundColor = bgColor)
+            }
+
             _uiState.update {
                 it.copy(
-                    originalBitmap = bmp,
-                    workingBitmap = bmp.copy(Bitmap.Config.ARGB_8888, true),
-                    textBlocks = blocks,
+                    originalBitmap = original,
+                    workingBitmap = working,
+                    textBlocks = blocksWithBg,
                     selectedIndex = null,
                     isLoading = false,
                     errorMessage = null
@@ -68,64 +86,65 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         typeface: Typeface,
         color: ComposeColor
     ) {
+        // Capture current state for background work
         val state = _uiState.value
         val block = state.textBlocks.getOrNull(index) ?: return
         val workingBmp = state.workingBitmap ?: return
+        val originalBmp = state.originalBitmap ?: workingBmp // fallback
 
-        val mutableBmp = workingBmp.copy(Bitmap.Config.ARGB_8888, true)
-        val canvas = Canvas(mutableBmp)
+        viewModelScope.launch(Dispatchers.Default) {
+            // Draw directly on the mutable working bitmap – no copy needed
+            val canvas = Canvas(workingBmp)
 
-        val rect = block.boundingBox
-        val w = mutableBmp.width
-        val h = mutableBmp.height
-        val left = (rect.left * w).toInt()
-        val top = (rect.top * h).toInt()
-        val right = (rect.right * w).toInt()
-        val bottom = (rect.bottom * h).toInt()
+            val rect = block.boundingBox
+            val w = workingBmp.width
+            val h = workingBmp.height
+            val left = (rect.left   * w).toInt()
+            val top    = (rect.top    * h).toInt()
+            val right  = (rect.right  * w).toInt()
+            val bottom = (rect.bottom * h).toInt()
 
-        // 1. Fill background (erase old text)
-        val bgColor = EditorUtils.extractDominantColor(state.originalBitmap ?: mutableBmp, rect)
-        val bgPaint = Paint().apply {
-            this.color = bgColor
-            style = Paint.Style.FILL
-        }
-        canvas.drawRect(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat(), bgPaint)
+            // 1. Erase old text using cached background color (or extract if missing)
+            val bgColor = block.backgroundColor
+                ?: EditorUtils.extractDominantColor(originalBmp, rect)
+            bgPaint.color = bgColor
+            canvas.drawRect(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat(), bgPaint)
 
-        // 2. Draw new text
-        val boxWidth = right - left
-        val boxHeight = bottom - top
-        var textSize = boxHeight * 0.6f
+            // 2. Draw new text with auto‑scaling font size
+            val boxWidth = right - left
+            val boxHeight = bottom - top
+            var textSize = boxHeight * 0.6f
 
-        val textPaint = Paint().apply {
-            this.color = EditorUtils.composeColorToInt(color)
-            this.textSize = textSize
-            this.typeface = typeface
-            this.textAlign = Paint.Align.CENTER
-            this.isAntiAlias = true
-        }
+            textPaint.apply {
+                this.color = EditorUtils.composeColorToInt(color)
+                this.typeface = typeface
+                this.textSize = textSize
+            }
 
-        val x = (left + right) / 2f
-        val y = (top + bottom) / 2f - (textPaint.descent() + textPaint.ascent()) / 2f
+            val x = (left + right) / 2f
+            // Vertical centering
+            val y = (top + bottom) / 2f - (textPaint.descent() + textPaint.ascent()) / 2f
 
-        var finalText = newText
-        var currentSize = textSize
-        while (currentSize > 10) {
+            var finalText = newText
+            var currentSize = textSize
+            while (currentSize > 10f) {
+                textPaint.textSize = currentSize
+                val textWidth = textPaint.measureText(finalText)
+                if (textWidth < boxWidth * 0.9f) break
+                currentSize *= 0.9f
+            }
             textPaint.textSize = currentSize
-            val textWidth = textPaint.measureText(finalText)
-            if (textWidth < boxWidth * 0.9) break
-            currentSize *= 0.9f
-        }
-        textPaint.textSize = currentSize
-        canvas.drawText(finalText, x, y, textPaint)
+            canvas.drawText(finalText, x, y, textPaint)
 
-        _uiState.update {
-            it.copy(
-                workingBitmap = mutableBmp,
-                textBlocks = it.textBlocks.mapIndexed { i, b ->
-                    if (i == index) b.copy(text = newText) else b
-                },
-                selectedIndex = null
-            )
+            // Update state on main thread
+            _uiState.update {
+                it.copy(
+                    textBlocks = it.textBlocks.mapIndexed { i, b ->
+                        if (i == index) b.copy(text = newText) else b
+                    },
+                    selectedIndex = null
+                )
+            }
         }
     }
 

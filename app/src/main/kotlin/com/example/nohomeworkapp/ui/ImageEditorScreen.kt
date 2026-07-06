@@ -1,6 +1,5 @@
 package com.example.nohomeworkapp.ui
 
-import androidx.compose.ui.graphics.nativeCanvas
 import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -179,7 +178,7 @@ fun ImageWithOverlay(
                     style = Stroke(width = 4f)
                 )
 
-                // Draw label using Compose text measuring & drawing
+                // Draw label using the new Compose text API (no native canvas)
                 val textLayoutResult = textMeasurer.measure(
                     text = block.text,
                     style = TextStyle(
