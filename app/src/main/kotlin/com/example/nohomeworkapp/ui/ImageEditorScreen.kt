@@ -36,7 +36,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -168,15 +167,15 @@ fun ImageWithOverlay(
                 val bottom = rect.bottom * size.height
 
                 // Draw bounding box
-                val color = if (index == selectedIndex) Color.Red else Color.Green
+                val boxColor = if (index == selectedIndex) Color.Red else Color.Green
                 drawRect(
-                    color = color,
+                    color = boxColor,
                     topLeft = Offset(left, top),
                     size = androidx.compose.ui.geometry.Size(right - left, bottom - top),
                     style = Stroke(width = 4f)
                 )
 
-                // Draw label using Android Canvas via drawIntoCanvas
+                // Draw text label using the native Android Canvas
                 drawIntoCanvas { canvas ->
                     val paint = Paint().apply {
                         color = android.graphics.Color.WHITE
