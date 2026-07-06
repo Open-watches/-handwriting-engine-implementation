@@ -1,0 +1,170 @@
+========== PROJECT STRUCTURE ==========
+.
+./app
+./app/src
+./app/src/androidTest
+./app/src/androidTest/java
+./app/src/main
+./app/src/main/java
+./app/src/main/java/com
+./app/src/main/java/com/example
+./app/src/main/java/com/example/nohomeworkapp
+./app/src/main/kotlin
+./app/src/main/kotlin/com
+./app/src/main/kotlin/com/example
+./app/src/main/kotlin/com/example/nohomeworkapp
+./app/src/main/kotlin/com/example/nohomeworkapp/ui
+./app/src/main/kotlin/com/example/nohomeworkapp/ui/theme
+./app/src/main/res
+./app/src/main/res/drawable
+./app/src/main/res/layout
+./app/src/main/res/mipmap-anydpi-v26
+./app/src/main/res/mipmap-hdpi
+./app/src/main/res/mipmap-mdpi
+./app/src/main/res/mipmap-xhdpi
+./app/src/main/res/mipmap-xxhdpi
+./app/src/main/res/mipmap-xxxhdpi
+./app/src/main/res/values
+./app/src/main/res/values-night
+./app/src/main/res/xml
+./app/src/test
+./app/src/test/java
+./gradle
+
+
+========== SETTINGS.GRADLE.KTS ==========
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "nohomework app"
+include(":app")
+
+
+========== ROOT BUILD.GRADLE.KTS ==========
+plugins {
+    id("com.android.application") version "8.7.3" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
+    id("org.jetbrains.kotlin.kapt") version "2.0.21" apply false
+}
+
+
+========== APP BUILD.GRADLE.KTS ==========
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+}
+android {
+    namespace = "com.example.nohomeworkapp"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.example.nohomeworkapp"
+        minSdk = 31
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    buildFeatures {
+        compose = true
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+dependencies {
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation(platform("androidx.compose:compose-bom:2024.09.03"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+}
+
+
+========== MAIN ACTIVITY ==========
+
+
+========== MAIN SCREEN COMPOSABLE ==========
+
+
+========== ANDROID MANIFEST ==========
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.NohomeworkApp">
+
+        <activity
+            android:name="com.example.nohomeworkapp.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.NohomeworkApp">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>
+
+
+========== DEPENDENCIES (libs.versions.toml) ==========
+Not found

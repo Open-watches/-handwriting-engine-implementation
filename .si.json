@@ -1,0 +1,30 @@
+{
+  "plugin": "org.smartide.plugin.kotlin",
+  "run": "kotlinc Main.kt -d . && kotlin MainKt",
+  "intelligence": {
+    ".json": {
+      "enabled": true,
+      "run": "vscode-json-language-server --stdio"
+    },
+    ".kts": {
+      "enabled": false,
+      "run": "kotlin-language-server"
+    },
+    ".kt": {
+      "enabled": false,
+      "run": "kotlin-language-server"
+    },
+    ".properties": {
+      "enabled": false,
+      "run": "lemminx"
+    },
+    ".yml": {
+      "enabled": false,
+      "run": "yaml-language-server --stdio"
+    },
+    ".xml": {
+      "enabled": true,
+      "run": "lemminx"
+    }
+  }
+}
