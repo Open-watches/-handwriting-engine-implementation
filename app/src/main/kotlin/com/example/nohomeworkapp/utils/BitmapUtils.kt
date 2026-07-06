@@ -6,12 +6,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
-import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
-import android.util.Size
 import androidx.exifinterface.media.ExifInterface
 import java.io.InputStream
-import android.os.Environment
 
 object BitmapUtils {
 
@@ -19,20 +17,20 @@ object BitmapUtils {
         return try {
             val resolver = context.contentResolver
             val inputStream: InputStream? = resolver.openInputStream(uri)
-            val options = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
-            var bitmap = BitmapFactory.decodeStream(inputStream, null, options)
+            var bitmap = inputStream?.let {
+                BitmapFactory.decodeStream(it)
+            }
             inputStream?.close()
 
             // Fix orientation
-            bitmap = rotateBitmapIfRequired(context, uri, bitmap)
-            bitmap
+            bitmap?.let { rotateBitmapIfRequired(context, uri, it) }
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
 
-    private fun rotateBitmapIfRequired(context: Context, uri: Uri, bitmap: Bitmap): Bitmap {
+    private fun rotateBitmapIfRequired(context: Context, uri: Uri, bitmap: Bitmap): Bitmap? {
         val orientation = getOrientation(context, uri)
         return if (orientation != 0) {
             val matrix = Matrix()

@@ -8,7 +8,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.net.Uri
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nohomeworkapp.data.TextBlock
@@ -26,7 +26,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private val recognizer = TextRecognizer()
 
-    // State
     private val _uiState = MutableStateFlow(EditorUiState())
     val uiState: StateFlow<EditorUiState> = _uiState.asStateFlow()
 
@@ -67,7 +66,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         index: Int,
         newText: String,
         typeface: Typeface,
-        color: androidx.compose.ui.graphics.Color
+        color: ComposeColor
     ) {
         val state = _uiState.value
         val block = state.textBlocks.getOrNull(index) ?: return
@@ -95,7 +94,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         // 2. Draw new text
         val boxWidth = right - left
         val boxHeight = bottom - top
-        val textSize = boxHeight * 0.6f // roughly fit vertically
+        var textSize = boxHeight * 0.6f
 
         val textPaint = Paint().apply {
             this.color = EditorUtils.composeColorToInt(color)
@@ -105,11 +104,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             this.isAntiAlias = true
         }
 
-        // Center the text
         val x = (left + right) / 2f
         val y = (top + bottom) / 2f - (textPaint.descent() + textPaint.ascent()) / 2f
 
-        // Scale down if text is too wide
         var finalText = newText
         var currentSize = textSize
         while (currentSize > 10) {
@@ -121,7 +118,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         textPaint.textSize = currentSize
         canvas.drawText(finalText, x, y, textPaint)
 
-        // Update state
         _uiState.update {
             it.copy(
                 workingBitmap = mutableBmp,

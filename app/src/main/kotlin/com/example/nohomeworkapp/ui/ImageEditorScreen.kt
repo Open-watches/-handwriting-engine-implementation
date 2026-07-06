@@ -1,6 +1,5 @@
 package com.example.nohomeworkapp.ui
 
-import android.graphics.RectF
 import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -35,15 +34,12 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.example.nohomeworkapp.EditorUiState
 import com.example.nohomeworkapp.EditorViewModel
 import com.example.nohomeworkapp.data.TextBlock
-import kotlinx.coroutines.coroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,14 +97,13 @@ fun ImageEditorScreen(
             val block = uiState.textBlocks[selectedIdx]
             EditTextDialog(
                 block = block,
-                onDismiss = { viewModel.selectBlock(selectedIdx) }, // deselect
+                onDismiss = { viewModel.selectBlock(selectedIdx) },
                 onConfirm = { newText, typeface, color ->
                     viewModel.replaceText(selectedIdx, newText, typeface, color)
                 }
             )
         }
 
-        // Error Snackbar (optional - just showing as text for simplicity)
         uiState.errorMessage?.let { msg ->
             Text(
                 text = msg,
@@ -131,7 +126,6 @@ fun ImageWithOverlay(
 ) {
     val imageBitmap = bitmap.asImageBitmap()
     Box(modifier = Modifier.fillMaxSize()) {
-        // Image
         androidx.compose.foundation.Image(
             bitmap = imageBitmap,
             contentDescription = null,
@@ -139,7 +133,6 @@ fun ImageWithOverlay(
             contentScale = ContentScale.Fit
         )
 
-        // Overlay Canvas
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
@@ -148,11 +141,9 @@ fun ImageWithOverlay(
                         while (true) {
                             val event = awaitPointerEvent()
                             val position = event.changes.firstOrNull()?.position ?: continue
-                            // Convert canvas size to normalized coords
                             val normalizedX = position.x / size.width
                             val normalizedY = position.y / size.height
 
-                            // Find which box contains this point
                             val foundIndex = textBlocks.indexOfFirst { block ->
                                 val rect = block.boundingBox
                                 normalizedX in rect.left..rect.right &&
@@ -165,7 +156,6 @@ fun ImageWithOverlay(
                     }
                 }
         ) {
-            // Draw bounding boxes
             textBlocks.forEachIndexed { index, block ->
                 val rect = block.boundingBox
                 val left = rect.left * size.width
@@ -180,15 +170,14 @@ fun ImageWithOverlay(
                     size = androidx.compose.ui.geometry.Size(right - left, bottom - top),
                     style = Stroke(width = 4f)
                 )
-                // Draw label
-                drawContext.canvas.nativeCanvas.apply {
-                    val paint = android.graphics.Paint().apply {
-                        this.color = android.graphics.Color.WHITE
-                        textSize = 30f
-                        isAntiAlias = true
-                    }
-                    drawText(block.text, left, top - 10f, paint)
-                }
+
+                // Draw label using Compose's drawText
+                drawText(
+                    text = block.text,
+                    topLeft = Offset(left, top - 30f),
+                    color = Color.White,
+                    fontSize = 24.sp
+                )
             }
         }
     }
@@ -204,7 +193,6 @@ fun EditTextDialog(
     var selectedTypeface by remember { mutableStateOf(Typeface.DEFAULT) }
     var selectedColor by remember { mutableStateOf(Color.White) }
 
-    // Font options
     val fontOptions = listOf(
         "Default" to Typeface.DEFAULT,
         "Serif" to Typeface.SERIF,
@@ -213,7 +201,6 @@ fun EditTextDialog(
     )
     var expanded by remember { mutableStateOf(false) }
 
-    // Color options (simple grid)
     val colorOptions = listOf(
         Color.White, Color.Black, Color.Red, Color.Green, Color.Blue,
         Color.Yellow, Color.Cyan, Color.Magenta, Color.Gray
@@ -229,7 +216,6 @@ fun EditTextDialog(
                     onValueChange = { newText = it },
                     modifier = Modifier.fillMaxWidth()
                 )
-                // Font Picker
                 Box(modifier = Modifier.padding(vertical = 8.dp)) {
                     Button(onClick = { expanded = true }) {
                         Text("Font: ${fontOptions.find { it.second == selectedTypeface }?.first ?: "Default"}")
@@ -249,7 +235,6 @@ fun EditTextDialog(
                         }
                     }
                 }
-                // Color Picker
                 Text("Choose Color", fontSize = 14.sp)
                 androidx.compose.foundation.layout.Row(
                     modifier = Modifier
