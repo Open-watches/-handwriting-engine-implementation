@@ -1,5 +1,6 @@
 package com.example.nohomeworkapp.ui
 
+import android.graphics.Paint
 import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -34,7 +35,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.drawText
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -165,6 +166,7 @@ fun ImageWithOverlay(
                 val right = rect.right * size.width
                 val bottom = rect.bottom * size.height
 
+                // Draw bounding box
                 val color = if (index == selectedIndex) Color.Red else Color.Green
                 drawRect(
                     color = color,
@@ -173,13 +175,15 @@ fun ImageWithOverlay(
                     style = Stroke(width = 4f)
                 )
 
-                // Draw label using Compose's drawText
-                drawText(
-                    text = block.text,
-                    topLeft = Offset(left, top - 30f),
-                    color = Color.White,
-                    fontSize = 24.sp
-                )
+                // Draw label using Android Canvas directly
+                drawContext.canvas.nativeCanvas.apply {
+                    val paint = Paint().apply {
+                        color = android.graphics.Color.WHITE
+                        textSize = 30f
+                        isAntiAlias = true
+                    }
+                    drawText(block.text, left, top - 10f, paint)
+                }
             }
         }
     }
