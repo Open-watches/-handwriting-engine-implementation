@@ -60,32 +60,27 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.navigation:navigation-compose:2.8.4")
-    // ... your existing dependencies ...
 
-    // Image loading (Coil) – used in the UI for preview (though we used bitmap directly, keep for flexibility)
+    // Image loading
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    // Google ML Kit Text Recognition (on‑device OCR)
+    // ML Kit Text Recognition
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
-
-    // Optional: if you need Chinese/Japanese/Korean text support, add:
+    // Optional for Chinese/Japanese/Korean:
     // implementation("com.google.android.gms:play-services-mlkit-text-recognition-chinese:16.0.0")
 
-    // EXIF interface – to handle image orientation when loading from URI
+    // EXIF support for image orientation
     implementation("androidx.exifinterface:exifinterface:1.3.7")
 
-    // Coroutines – needed for `viewModelScope` and `Dispatchers` (if not already present)
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // ViewModel integration with Compose – if you don't already have it
+    // ViewModel integration with Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
-    
-    
-    
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-
 }
