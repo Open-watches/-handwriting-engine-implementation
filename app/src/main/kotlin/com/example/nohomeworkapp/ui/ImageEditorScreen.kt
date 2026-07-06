@@ -4,8 +4,10 @@ import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,12 +34,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawText
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.nohomeworkapp.EditorUiState
 import com.example.nohomeworkapp.EditorViewModel
 import com.example.nohomeworkapp.data.TextBlock
 
@@ -89,30 +91,30 @@ fun ImageEditorScreen(
                     )
                 }
             }
-        }
 
-        // Edit Dialog
-        val selectedIdx = uiState.selectedIndex
-        if (selectedIdx != null && uiState.textBlocks.isNotEmpty()) {
-            val block = uiState.textBlocks[selectedIdx]
-            EditTextDialog(
-                block = block,
-                onDismiss = { viewModel.selectBlock(selectedIdx) },
-                onConfirm = { newText, typeface, color ->
-                    viewModel.replaceText(selectedIdx, newText, typeface, color)
-                }
-            )
-        }
+            // Edit Dialog
+            val selectedIdx = uiState.selectedIndex
+            if (selectedIdx != null && uiState.textBlocks.isNotEmpty()) {
+                val block = uiState.textBlocks[selectedIdx]
+                EditTextDialog(
+                    block = block,
+                    onDismiss = { viewModel.selectBlock(selectedIdx) },
+                    onConfirm = { newText, typeface, color ->
+                        viewModel.replaceText(selectedIdx, newText, typeface, color)
+                    }
+                )
+            }
 
-        uiState.errorMessage?.let { msg ->
-            Text(
-                text = msg,
-                color = Color.Red,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .background(Color.Black)
-                    .padding(8.dp)
-            )
+            uiState.errorMessage?.let { msg ->
+                Text(
+                    text = msg,
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .background(Color.Black)
+                        .padding(8.dp)
+                )
+            }
         }
     }
 }
@@ -236,11 +238,11 @@ fun EditTextDialog(
                     }
                 }
                 Text("Choose Color", fontSize = 14.sp)
-                androidx.compose.foundation.layout.Row(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     colorOptions.forEach { color ->
                         Box(
