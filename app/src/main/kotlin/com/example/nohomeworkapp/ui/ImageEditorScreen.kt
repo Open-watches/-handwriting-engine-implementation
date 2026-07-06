@@ -175,8 +175,8 @@ fun ImageWithOverlay(
                     style = Stroke(width = 4f)
                 )
 
-                // Draw label using Android Canvas directly
-                drawContext.canvas.nativeCanvas.apply {
+                // Draw label using Android Canvas directly – FIXED LINE BELOW
+                drawContext.canvas.apply {
                     val paint = Paint().apply {
                         color = android.graphics.Color.WHITE
                         textSize = 30f
