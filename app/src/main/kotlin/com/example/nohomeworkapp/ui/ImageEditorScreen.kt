@@ -1,6 +1,6 @@
 package com.example.nohomeworkapp.ui
 
-import android.graphics.Paint
+import androidx.compose.ui.graphics.nativeCanvas
 import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -35,9 +35,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -128,6 +130,8 @@ fun ImageWithOverlay(
     onBlockSelected: (Int) -> Unit
 ) {
     val imageBitmap = bitmap.asImageBitmap()
+    val textMeasurer = rememberTextMeasurer()
+
     Box(modifier = Modifier.fillMaxSize()) {
         androidx.compose.foundation.Image(
             bitmap = imageBitmap,
@@ -175,15 +179,18 @@ fun ImageWithOverlay(
                     style = Stroke(width = 4f)
                 )
 
-                // Draw text label using the native Android Canvas
-                drawIntoCanvas { canvas ->
-                    val paint = Paint().apply {
-                        color = android.graphics.Color.WHITE
-                        textSize = 30f
-                        isAntiAlias = true
-                    }
-                    canvas.nativeCanvas.drawText(block.text, left, top - 10f, paint)
-                }
+                // Draw label using Compose text measuring & drawing
+                val textLayoutResult = textMeasurer.measure(
+                    text = block.text,
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        color = Color.White
+                    )
+                )
+                drawText(
+                    textLayoutResult = textLayoutResult,
+                    topLeft = Offset(left, top - textLayoutResult.size.height)
+                )
             }
         }
     }
