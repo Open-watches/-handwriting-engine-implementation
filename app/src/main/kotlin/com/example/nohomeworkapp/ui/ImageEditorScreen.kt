@@ -35,6 +35,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -175,14 +176,14 @@ fun ImageWithOverlay(
                     style = Stroke(width = 4f)
                 )
 
-                // Draw label using Android Canvas directly – FIXED LINE BELOW
-                drawContext.canvas.apply {
+                // Draw label using Android Canvas via drawIntoCanvas
+                drawIntoCanvas { canvas ->
                     val paint = Paint().apply {
                         color = android.graphics.Color.WHITE
                         textSize = 30f
                         isAntiAlias = true
                     }
-                    drawText(block.text, left, top - 10f, paint)
+                    canvas.nativeCanvas.drawText(block.text, left, top - 10f, paint)
                 }
             }
         }
