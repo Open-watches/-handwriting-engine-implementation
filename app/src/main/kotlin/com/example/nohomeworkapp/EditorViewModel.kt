@@ -25,7 +25,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private val recognizer = TextRecognizer()
 
-    // Reusable Paint objects – allocated once, reused for every drawing operation
     private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
     }
@@ -46,20 +45,24 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             val original = bmp
             val working = original.copy(Bitmap.Config.ARGB_8888, true)
 
-            // 1. Detect text blocks
+            // 1. OCR with language detection
             val rawBlocks = recognizer.detectText(original)
 
-            // 2. Compute background color for each block using the original bitmap
-            val blocksWithBg = rawBlocks.map { block ->
+            // 2. Extract background and foreground colours from the original image
+            val blocksWithStyle = rawBlocks.map { block ->
                 val bgColor = EditorUtils.extractDominantColor(original, block.boundingBox)
-                block.copy(backgroundColor = bgColor)
+                val fgColor = EditorUtils.extractForegroundColor(original, block.boundingBox, bgColor)
+                block.copy(
+                    backgroundColor = bgColor,
+                    foregroundColor = fgColor
+                )
             }
 
             _uiState.update {
                 it.copy(
                     originalBitmap = original,
                     workingBitmap = working,
-                    textBlocks = blocksWithBg,
+                    textBlocks = blocksWithStyle,
                     selectedIndex = null,
                     isLoading = false,
                     errorMessage = null
@@ -86,31 +89,29 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         typeface: Typeface,
         color: ComposeColor
     ) {
-        // Capture current state for background work
         val state = _uiState.value
         val block = state.textBlocks.getOrNull(index) ?: return
         val workingBmp = state.workingBitmap ?: return
-        val originalBmp = state.originalBitmap ?: workingBmp // fallback
+        val originalBmp = state.originalBitmap ?: workingBmp
 
         viewModelScope.launch(Dispatchers.Default) {
-            // Draw directly on the mutable working bitmap – no copy needed
             val canvas = Canvas(workingBmp)
 
             val rect = block.boundingBox
             val w = workingBmp.width
             val h = workingBmp.height
-            val left = (rect.left   * w).toInt()
+            val left   = (rect.left   * w).toInt()
             val top    = (rect.top    * h).toInt()
             val right  = (rect.right  * w).toInt()
             val bottom = (rect.bottom * h).toInt()
 
-            // 1. Erase old text using cached background color (or extract if missing)
+            // 1. Erase old text using cached background colour
             val bgColor = block.backgroundColor
                 ?: EditorUtils.extractDominantColor(originalBmp, rect)
             bgPaint.color = bgColor
             canvas.drawRect(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat(), bgPaint)
 
-            // 2. Draw new text with auto‑scaling font size
+            // 2. Draw new text
             val boxWidth = right - left
             val boxHeight = bottom - top
             var textSize = boxHeight * 0.6f
@@ -122,21 +123,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             }
 
             val x = (left + right) / 2f
-            // Vertical centering
             val y = (top + bottom) / 2f - (textPaint.descent() + textPaint.ascent()) / 2f
 
-            var finalText = newText
             var currentSize = textSize
             while (currentSize > 10f) {
                 textPaint.textSize = currentSize
-                val textWidth = textPaint.measureText(finalText)
+                val textWidth = textPaint.measureText(newText)
                 if (textWidth < boxWidth * 0.9f) break
                 currentSize *= 0.9f
             }
             textPaint.textSize = currentSize
-            canvas.drawText(finalText, x, y, textPaint)
+            canvas.drawText(newText, x, y, textPaint)
 
-            // Update state on main thread
             _uiState.update {
                 it.copy(
                     textBlocks = it.textBlocks.mapIndexed { i, b ->

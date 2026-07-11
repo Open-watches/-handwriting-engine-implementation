@@ -94,7 +94,6 @@ fun ImageEditorScreen(
                 }
             }
 
-            // Edit Dialog
             val selectedIdx = uiState.selectedIndex
             if (selectedIdx != null && uiState.textBlocks.isNotEmpty()) {
                 val block = uiState.textBlocks[selectedIdx]
@@ -169,7 +168,6 @@ fun ImageWithOverlay(
                 val right = rect.right * size.width
                 val bottom = rect.bottom * size.height
 
-                // Draw bounding box
                 val boxColor = if (index == selectedIndex) Color.Red else Color.Green
                 drawRect(
                     color = boxColor,
@@ -178,7 +176,7 @@ fun ImageWithOverlay(
                     style = Stroke(width = 4f)
                 )
 
-                // Draw label using the new Compose text API (no native canvas)
+                // Compose text drawing – no native Canvas
                 val textLayoutResult = textMeasurer.measure(
                     text = block.text,
                     style = TextStyle(
@@ -201,9 +199,18 @@ fun EditTextDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Typeface, Color) -> Unit
 ) {
+    // Pre-select the original foreground colour from the block (if available)
+    val initialColor = block.foregroundColor?.let { androidColor ->
+        Color(
+            red   = android.graphics.Color.red(androidColor)   / 255f,
+            green = android.graphics.Color.green(androidColor) / 255f,
+            blue  = android.graphics.Color.blue(androidColor)  / 255f
+        )
+    } ?: Color.White
+
     var newText by remember { mutableStateOf(block.text) }
     var selectedTypeface by remember { mutableStateOf(Typeface.DEFAULT) }
-    var selectedColor by remember { mutableStateOf(Color.White) }
+    var selectedColor by remember { mutableStateOf(initialColor) }
 
     val fontOptions = listOf(
         "Default" to Typeface.DEFAULT,

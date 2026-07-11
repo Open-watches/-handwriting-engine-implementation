@@ -40,11 +40,9 @@ object BitmapUtils {
 
     private fun getOrientation(context: Context, uri: Uri): Int {
         return try {
-            // Works reliably on all API levels
             val inputStream: InputStream = context.contentResolver.openInputStream(uri) ?: return 0
             val exif = ExifInterface(inputStream)
             inputStream.close()
-
             when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
                 ExifInterface.ORIENTATION_ROTATE_90  -> 90
                 ExifInterface.ORIENTATION_ROTATE_180 -> 180
