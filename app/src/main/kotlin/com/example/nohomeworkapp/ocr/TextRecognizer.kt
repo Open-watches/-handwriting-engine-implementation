@@ -17,12 +17,11 @@ class TextRecognizer {
         TextRecognizerOptions.Builder()
             .setScripts(
                 Script.LATIN,
-                Script.MYANMAR,        // Burmese
-                Script.CJK,            // Chinese, Japanese, Korean
-                Script.DEVANAGARI,     // Hindi, etc.
+                Script.MYANMAR,
+                Script.CJK,
+                Script.DEVANAGARI,
                 Script.ARABIC,
                 Script.THAI
-                // Add more as needed – full list in Google documentation
             )
             .build()
     )
@@ -33,7 +32,7 @@ class TextRecognizer {
 
         result.textBlocks.mapNotNull { block ->
             val rect = block.boundingBox ?: return@mapNotNull null
-            val language = block.recognizedLanguage?.languageTag // e.g. "my", "en"
+            val language = block.recognizedLanguage?.languageTag   // e.g. "my", "en", "ja"
             TextBlock(
                 text = block.text,
                 boundingBox = RectF(
