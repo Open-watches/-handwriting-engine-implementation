@@ -64,18 +64,16 @@ dependencies {
     // Image loading
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    // ML Kit Text Recognition
-    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
-    // Optional for Chinese/Japanese/Korean:
-    // implementation("com.google.android.gms:play-services-mlkit-text-recognition-chinese:16.0.0")
+    // ML Kit Text Recognition - full multi‑script version (Latin, Myanmar, CJK, etc.)
+    implementation("com.google.mlkit:text-recognition:16.0.0")
 
     // EXIF support for image orientation
     implementation("androidx.exifinterface:exifinterface:1.3.7")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
     // ViewModel integration with Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
 
